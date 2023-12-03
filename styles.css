@@ -1,0 +1,49 @@
+:root {
+    --base-font-family: 'Fira Sans', sans-serif;
+    --blue-30-color:#7CBAF9;
+    --blue-10-color: #7FACAC;
+    --blue-70-color: #020275;
+    --white-color: white;
+
+    --main-bg-start-color: ;
+    --main-bg-end-color: ;
+    --main-header-text-color: var(--blue-70-color);
+}
+* {
+    margin: 0;
+    padding: 0;
+    font-family: var(--base-font-family);
+}
+body {
+    height: 100vh;
+    padding: 0 4vw;
+    background: linear-gradient(var(--blue-30-color), var(--blue-10-color)) center / cover no-repeat;
+}
+#app-header {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4vh 0;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+.app-header__app-name {
+    font-size: clamp(1rem, 2.7vw, 3.2rem);
+    color: var(--main-header-text-color);
+}
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+}
+.user-info__name {
+    font-size: clamp(1rem, 2.7vw, 3.2rem);
+    color: var(--main-header-text-color);
+}
+.user-info__avatar {
+    width: clamp(2rem, 6vw, 5rem);
+    height: clamp(2rem, 6vw, 5rem);
+    border-radius: 50%;
+    border: 2px solid var(--white-color);
+    background: url(images/keanu.jpg) center / cover;
+}
