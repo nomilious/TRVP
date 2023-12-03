@@ -1,12 +1,12 @@
 :root {
     --base-font-family: 'Fira Sans', sans-serif;
-    --blue-30-color:#7CBAF9;
-    --blue-10-color: #7FACAC;
+    --blue-30-color: #7CBAF9;
+    --blue-40-color: #93C4F5;
     --blue-70-color: #020275;
     --white-color: white;
 
     --main-bg-start-color: var(--blue-30-color);
-    --main-bg-end-color: var(--blue-10-color);
+    --main-bg-end-color: var(--blue-40-color);
     --main-header-text-color: var(--blue-70-color);
     --shadow-color: #00000029;
     --dark-grey-color: #4f4f4b;
@@ -102,8 +102,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: var(--blue-10-color);
-    border: 2px solid var(--blue-10-color);
+    background-color: var(--blue-30-color);
+    border: 2px solid var(--blue-30-color);
     padding: 1vw;
     gap: 1vw;
     margin-bottom: 1vw;
@@ -113,7 +113,7 @@ body {
 }
 .task:hover{
     cursor: pointer;
-    background-color: var(--blue-30-color);
+    background-color: var(--blue-40-color);
     border-color: var(--blue-70-color);
 }
 .task__text {
@@ -186,7 +186,6 @@ body {
     box-shadow: 0 0 4px var(--dark-grey-color);
     color: var(--dark-grey-color);
     opacity: 0.7;
-
 }
 .tasklist-adder_input:focus, .tasklist-adder_input:hover {
     opacity: 1;
