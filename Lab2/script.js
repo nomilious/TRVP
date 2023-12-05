@@ -6,8 +6,39 @@ document.addEventListener("DOMContentLoaded", () => {
 class App {
     #tasklists= [];
 
-    onMoveTask = ({taskID}) => {
-        console.log("Move", taskID)
+    moveTask = ({ taskID, direction }) => {
+        let srcTasklistIndex = -1;
+
+        this.#tasklists.forEach((tasklist, i) => {
+            let task = tasklist.getTaskById({ taskID });
+            if (task) {
+                srcTasklistIndex = i;
+            }
+        });
+
+        const destTasklistIndex = direction === 'left'
+            ? srcTasklistIndex - 1
+            : srcTasklistIndex + 1;
+
+        const movedTask = this.#tasklists[srcTasklistIndex].deleteTask({ taskID });
+        this.#tasklists[destTasklistIndex].addTask({ task: movedTask });
+    };
+
+    onMoveTask = ({taskID, direction}) => {
+        if (!direction || (direction !== 'left' && direction !== 'right')) return;
+
+        const taskElement = document.getElementById(taskID);
+        const srcTasklistElement = taskElement.closest('.tasklist');
+        const destTasklistElement = direction === 'left'
+            ? srcTasklistElement.previousElementSibling
+            : srcTasklistElement.nextElementSibling;
+
+        if (!destTasklistElement) return;
+
+        destTasklistElement.querySelector('ul.tasklist__tasks-list')
+            .appendChild(taskElement);
+
+        this.moveTask({ taskID, direction });
     }
     onEditTask = ({taskID}) => {
         let fTask = null;
@@ -198,12 +229,12 @@ class Task {
         const leftArrowBtn = document.createElement("button")
         leftArrowBtn.classList.add("task__contol-btn", "left-arrow-icon")
         leftArrowBtn.type = "button"
-        leftArrowBtn.onclick = () => this.onMoveTask({taskID: this.#taskID})
+        leftArrowBtn.onclick = () => this.onMoveTask({taskID: this.#taskID, direction: 'left' })
 
         const rightArrowBtn = document.createElement("button")
         rightArrowBtn.classList.add("task__contol-btn", "right-arrow-icon")
         rightArrowBtn.type = "button"
-        rightArrowBtn.onclick = () => this.onMoveTask({taskID: this.#taskID})
+        rightArrowBtn.onclick = () => this.onMoveTask({taskID: this.#taskID, direction: 'right' })
 
         upperRowDiv.appendChild(leftArrowBtn)
         upperRowDiv.appendChild(rightArrowBtn)
