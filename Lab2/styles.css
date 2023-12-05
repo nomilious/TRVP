@@ -219,3 +219,11 @@ body {
 .tasklist-adder__input:focus {
     opacity: 1;
 }
+
+.tasklist:first-child .left-arrow-icon {
+    display: none;
+}
+
+.tasklist:nth-last-child(2) .right-arrow-icon {
+    display: none;
+}
