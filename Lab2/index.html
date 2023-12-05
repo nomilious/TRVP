@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
     <title>Custom Task Manager</title>
 </head>
 <body>
@@ -25,9 +26,9 @@
             </h2>
             <ul class="tasklist__tasks-list">
                 <li class="tasklist__tasks-list-item task">
-            <span class="task__text">
-              Сдать лабы по ЭВМ
-            </span>
+                    <span class="task__text">
+                      Сдать лабы по ЭВМ
+                    </span>
                     <div class="task__controls">
                         <div class="task__controls-row">
                             <button type="button" class="task__contol-btn left-arrow-icon"></button>
@@ -59,7 +60,7 @@
                 &#10010; Добавить карточку
             </button>
         </li>
-        <li class="tasklists-list__item tasklist">
+        <!--<li class="tasklists-list__item tasklist">
             <h2 class="tasklist__name">
                 К выполнению
             </h2>
@@ -113,19 +114,17 @@
             <button type="button" class="tasklist__add-task-btn">
                 &#10010; Добавить карточку
             </button>
-        </li>
+        </li>-->
         <li class="tasklists-list__item tasklist-adder">
             <button type="button" class="tasklist-adder__btn">
                 &#10010; Добавить список
             </button>
+            <input
+                type="text"
+                placeholder="Новый список"
+                class="tasklist-adder__input"
+            />
         </li>
-        <!-- <li class="tasklists-list__item tasklist-adder">
-          <input
-            type="text"
-            placeholder="Новый список"
-            class="tasklist-adder__input"
-          />
-        </li> -->
     </ul>
 </main>
 </body>
