@@ -179,19 +179,6 @@ body {
     background: url(assets/delete-button.svg) center / cover;
 }
 
-.tasklist__tasks-list-item:first-child .left-arrow-icon,
-.tasklist__tasks-list-item:last-child .right-arrow-icon {
-    display: none;
-}
-
-.tasklist__tasks-list-item:not(:first-child) .left-arrow-icon {
-    display: block;
-}
-
-.tasklist__tasks-list-item:not(:last-child) .right-arrow-icon {
-    display: block;
-}
-
 .tasklist-adder {
     background-color: var(--tasklist-last-bg-color);
     transition: background-color 1s ease;

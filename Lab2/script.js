@@ -6,6 +6,44 @@ document.addEventListener("DOMContentLoaded", () => {
 class App {
     #tasklists= [];
 
+    onMoveTask = ({taskID}) => {
+        console.log("Move", taskID)
+    }
+    onEditTask = ({taskID}) => {
+        let fTask = null;
+        for (let tasklist of this.#tasklists) {
+            fTask = tasklist.getTaskById({ taskID });
+            if (fTask) break;
+        }
+        const curTaskText = fTask.taskText;
+
+        const newTaskText = prompt('Введите новое описание задачи', curTaskText);
+
+        if (!newTaskText || newTaskText === curTaskText) return;
+
+        fTask.taskText = newTaskText;
+
+        document.querySelector(`[id="${taskID}"] span.task__text`).innerHTML = newTaskText;
+    }
+    onDeleteTask = ({ taskID }) => {
+        let fTask = null;
+        let fTasklist = null;
+        for (let tasklist of this.#tasklists) {
+            fTasklist = tasklist;
+            fTask = tasklist.getTaskById({ taskID });
+            if (fTask) break;
+        }
+        console.log(fTask, fTasklist)
+
+        const taskShouldBeDeleted = confirm(`Задача '${fTask.taskText}' будет удалена. Прододлжить?`);
+
+        if (!taskShouldBeDeleted) return;
+
+        fTasklist.deleteTask({ taskID });
+
+        document.getElementById(taskID).remove();
+    };
+
     // стрелочные функции - привязка к контексту
     onKeyDown = (event) => {
         if (event.key === "Escape") {
@@ -22,7 +60,10 @@ class App {
 
         if (event.target.value) {
             const newTasklist = new TaskList({
-                name: event.target.value
+                name: event.target.value,
+                onMoveTask: this.onMoveTask,
+                onEditTask: this.onEditTask,
+                onDeleteTask: this.onDeleteTask
             });
             newTasklist.render()
 
@@ -45,7 +86,6 @@ class App {
         )
         document.addEventListener("keydown", this.onKeyDown)
         input.addEventListener("keydown", this.onInputKeyDown)
-
     }
 
 }
@@ -54,11 +94,47 @@ class TaskList {
     #tasklistName = [];
     #tasklistID = [];
 
-    constructor({name}) {
+    constructor({name, onMoveTask, onEditTask, onDeleteTask}) {
         this.#tasklistName = name;
         this.#tasklistID = crypto.randomUUID();
+        this.onMoveTask = onMoveTask
+        this.onEditTask = onEditTask
+        this.onDeleteTask = onDeleteTask
     }
-    get tasklistID() { return this.#tasklistID;}
+    addTask = ({ task }) => this.#tasks.push(task);
+
+    getTaskById = ({ taskID }) => this.#tasks.find(task => task.taskID === taskID)
+
+    deleteTask = ({ taskID }) => {
+        const deleteTaskIndex = this.#tasks.findIndex(task => task.taskID === taskID);
+
+        if (deleteTaskIndex === -1) return;
+
+        const [deletedTask] = this.#tasks.splice(deleteTaskIndex, 1);
+        return deletedTask;
+    };
+
+    onAddNewTask = () => {
+        const newTaskText = prompt("Введите описание задачи: ", "Новая задача")
+
+        if (!newTaskText) return;
+
+        const newTask = new Task({
+            text: newTaskText,
+            onMoveTask: this.onMoveTask,
+            onEditTask: this.onEditTask,
+            onDeleteTask: this.onDeleteTask
+        })
+
+        // create DOM
+        const newTaskElement = newTask.render()
+
+        this.#tasks.push(newTask)
+
+        document.querySelector(`[id="${this.#tasklistID}"] .tasklist__tasks-list`)
+            .appendChild(newTaskElement)
+
+    }
     render () {
         const liElement = document.createElement("li")
         liElement.classList.add("tasklists-list__item", "tasklist")
@@ -78,27 +154,80 @@ class TaskList {
         buttonElement.type = "button"
         buttonElement.innerHTML = "&#10010; Добавить карточку";
         liElement.appendChild(buttonElement)
-        buttonElement.onclick = () => console.log("CLICKED")
+        buttonElement.onclick = this.onAddNewTask
 
         const adderElement = document.querySelector(".tasklist-adder")
-        console.log(adderElement.parentElement)
         adderElement.parentElement.insertBefore(liElement, adderElement)
-
     }
+    get tasklistID() { return this.#tasklistID;}
 }
 class Task {
-    #tasks= [];
     #taskText = [];
     #taskID = [];
-    constructor({text}) {
+    constructor({text, onMoveTask, onEditTask, onDeleteTask}) {
         this.#taskID = crypto.randomUUID()
         this.#taskText = text
+        this.onMoveTask = onMoveTask
+        this.onEditTask = onEditTask
+        this.onDeleteTask = onDeleteTask
     }
 
     get taskID() { return this.#taskID;}
     get taskText() { return this.#taskText;}
     set taskText(value) {
-        if (typeof value !== "sctring") return
+        if (typeof value !== "string") return
         this.#taskText = value
+    }
+
+    render() {
+        const liEment = document.createElement("li")
+        liEment.classList.add("tasklist__tasks-list-item", "task")
+        liEment.id = this.#taskID
+
+        const spanElement = document.createElement("span")
+        spanElement.classList.add("task__text")
+        spanElement.innerHTML = this.#taskText
+        liEment.appendChild(spanElement)
+
+        const controlsDiv = document.createElement("div")
+        controlsDiv.classList.add("task__controls")
+
+        const upperRowDiv = document.createElement("div")
+        upperRowDiv.classList.add("task__controls-row")
+
+        const leftArrowBtn = document.createElement("button")
+        leftArrowBtn.classList.add("task__contol-btn", "left-arrow-icon")
+        leftArrowBtn.type = "button"
+        leftArrowBtn.onclick = () => this.onMoveTask({taskID: this.#taskID})
+
+        const rightArrowBtn = document.createElement("button")
+        rightArrowBtn.classList.add("task__contol-btn", "right-arrow-icon")
+        rightArrowBtn.type = "button"
+        rightArrowBtn.onclick = () => this.onMoveTask({taskID: this.#taskID})
+
+        upperRowDiv.appendChild(leftArrowBtn)
+        upperRowDiv.appendChild(rightArrowBtn)
+        controlsDiv.appendChild(upperRowDiv)
+
+        const lowerRowDiv = document.createElement("div")
+        lowerRowDiv.classList.add("task__controls-row")
+
+        const editBtn = document.createElement("button")
+        editBtn.classList.add("task__contol-btn", "edit-icon")
+        editBtn.type = "button"
+        editBtn.onclick = () => this.onEditTask({taskID: this.#taskID})
+
+        const deleteBtn = document.createElement("button")
+        deleteBtn.classList.add("task__contol-btn", "delete-icon")
+        deleteBtn.type = "button"
+        deleteBtn.onclick = () => this.onDeleteTask({taskID: this.#taskID})
+
+        lowerRowDiv.appendChild(editBtn)
+        lowerRowDiv.appendChild(deleteBtn)
+        controlsDiv.appendChild(lowerRowDiv)
+
+        liEment.appendChild(controlsDiv)
+
+        return liEment;
     }
 }
