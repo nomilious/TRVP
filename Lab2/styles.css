@@ -62,7 +62,7 @@ body {
     height: clamp(2rem, 6vw, 5rem);
     border-radius: 50%;
     border: 2px solid var(--white-color);
-    background: url(images/keanu.jpg) center / cover;
+    background: url(../images/keanu.jpg) center / cover;
 }
 
 .user-info__username {
@@ -164,19 +164,19 @@ body {
 }
 
 .left-arrow-icon {
-    background: url(assets/left-arrow.svg) center / cover;
+    background: url(../assets/left-arrow.svg) center / cover;
 }
 
 .right-arrow-icon {
-    background: url(assets/right-arrow.svg) center / cover;
+    background: url(../assets/right-arrow.svg) center / cover;
 }
 
 .edit-icon {
-    background: url(assets/edit.svg) center / cover;
+    background: url(../assets/edit.svg) center / cover;
 }
 
 .delete-icon {
-    background: url(assets/delete-button.svg) center / cover;
+    background: url(../assets/delete-button.svg) center / cover;
 }
 
 .tasklist-adder {
