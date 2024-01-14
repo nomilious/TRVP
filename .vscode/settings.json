@@ -8,6 +8,7 @@
         ".idea": true,
         "Lab1": true,
         "Lab2": true,
+        "Lab3": true,
         ".vscode": true,
         "task-manager.fig": true,
         ".prettierrc": true
