@@ -1,0 +1,15 @@
+{
+  "name": "task_manager",
+  "version": "1.0.0",
+  "description": "test task-manager app",
+  "main": "script.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "author": "Belic Eduard",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^5.0.11"
+  }
+}

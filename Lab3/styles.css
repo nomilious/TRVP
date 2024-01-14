@@ -4,8 +4,10 @@
     --blue-10-color: #93C4F5;
     --blue-30-color: #7CBAF9;
     --blue-70-color: #020275;
+    --blue-90-color: #01203F;
 
     --seawave-30-color: #7FACAC;
+    --seawave-90-color: #053A47;
 
     --white-color: white;
 
@@ -36,6 +38,11 @@ body {
     min-height: 100vh;
     background: linear-gradient(var(--main-bg-start-color), var(--main-bg-end-color)) center / cover no-repeat;
 }
+body.dark-theme {
+    --main-bg-start-color: var(--blue-90-color);
+    --main-bg-end-color: var(--seawave-90-color);
+    --main-header-text-color: var(--blue-10-color);
+}
 
 #app-header {
     width: 100%;
@@ -50,6 +57,11 @@ body {
     font-size: clamp(1rem, 2.7vw, 3.2rem);
     color: var(--main-header-text-color);
 }
+.app-header__user-and-controls {
+    display: flex;
+    align-items: center;
+    gap: 4vw;
+}
 
 .user-info {
     display: flex;
@@ -62,14 +74,55 @@ body {
     height: clamp(2rem, 6vw, 5rem);
     border-radius: 50%;
     border: 2px solid var(--white-color);
-    background: url(../images/keanu.jpg) center / cover;
+    background: url(public/images/keanu.jpg) center / cover;
 }
 
 .user-info__username {
     font-size: clamp(1rem, 2.7vw, 3.2rem);
     color: var(--main-header-text-color);
 }
-
+.toggle-switch {
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    width: 6vh;
+    height: 3vh;
+}
+.toggle-switch__checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-switch__slider {
+    position: absolute;
+    cursor: pointer;
+    top:0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 1.5vh;
+    background-color: var(--blue-30-color);
+    border: 1px solid var(--white-color);
+    transition: .4s;
+}
+/* position absolute: postion element absolute relative to the first parent with position relative */
+.toggle-switch__slider::before {
+    width: calc(3vh - 6px);
+    height: calc(3vh - 4px);
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    border-radius: 50%;
+    background-color: var(--white-color);
+    transition: .4s;
+}
+.toggle-switch__checkbox:checked + .toggle-switch__slider{
+    background-color: var(--blue-70-color);
+}
+.toggle-switch__checkbox:checked + .toggle-switch__slider::before {
+    transform: translateX(3vh);
+}
 #app-main {
     width: 100%;
     box-sizing: border-box;
@@ -164,19 +217,19 @@ body {
 }
 
 .left-arrow-icon {
-    background: url(../assets/left-arrow.svg) center / cover;
+    background: url(public/assets/left-arrow.svg) center / cover;
 }
 
 .right-arrow-icon {
-    background: url(../assets/right-arrow.svg) center / cover;
+    background: url(public/assets/right-arrow.svg) center / cover;
 }
 
 .edit-icon {
-    background: url(../assets/edit.svg) center / cover;
+    background: url(public/assets/edit.svg) center / cover;
 }
 
 .delete-icon {
-    background: url(../assets/delete-button.svg) center / cover;
+    background: url(public/assets/delete-button.svg) center / cover;
 }
 
 .tasklist-adder {
