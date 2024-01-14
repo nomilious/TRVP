@@ -9,6 +9,9 @@
         "Lab1": true,
         "Lab2": true,
         ".vscode": true,
-        "task-manager.fig": true
-    }
+        "task-manager.fig": true,
+        ".prettierrc": true
+    },
+    "editor.indentSize": 4
+
 }

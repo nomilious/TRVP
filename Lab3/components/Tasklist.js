@@ -1,74 +1,105 @@
 import Task from "./Task";
 
-export default class TaskList {
-    #tasks= [];
-    #tasklistName = [];
-    #tasklistID = [];
+export default class Tasklist {
+    #tasks = [];
+    #tasklistName = "";
+    #tasklistID = "";
 
-    constructor({name, onMoveTask, onEditTask, onDeleteTask}) {
+    constructor({
+        name,
+        // onMoveTask,
+        onDropTaskInTasklist,
+        onEditTask,
+        onDeleteTask,
+    }) {
         this.#tasklistName = name;
         this.#tasklistID = crypto.randomUUID();
-        this.onMoveTask = onMoveTask
-        this.onEditTask = onEditTask
-        this.onDeleteTask = onDeleteTask
+        // this.onMoveTask = onMoveTask;
+        this.onDropTaskInTasklist = onDropTaskInTasklist;
+        this.onEditTask = onEditTask;
+        this.onDeleteTask = onDeleteTask;
     }
+
+    get tasklistID() {
+        return this.#tasklistID;
+    }
+
     addTask = ({ task }) => this.#tasks.push(task);
 
-    getTaskById = ({ taskID }) => this.#tasks.find(task => task.taskID === taskID)
+    getTaskById = ({ taskID }) =>
+        this.#tasks.find(task => task.taskID === taskID);
 
     deleteTask = ({ taskID }) => {
-        const deleteTaskIndex = this.#tasks.findIndex(task => task.taskID === taskID);
+        const deleteTaskIndex = this.#tasks.findIndex(
+            task => task.taskID === taskID,
+        );
 
         if (deleteTaskIndex === -1) return;
 
         const [deletedTask] = this.#tasks.splice(deleteTaskIndex, 1);
+
         return deletedTask;
     };
 
+    reorderTasks = () => {
+        const orderedTasksIDs = Array.from(
+            document.querySelector(
+                `[id="${this.#tasklistID}"] .tasklist__tasks-list`,
+            ).children,
+            elem => elem.getAttribute("id"),
+        );
+
+        orderedTasksIDs.forEach((taskID, order) => {
+            this.#tasks.find(task => task.taskID === taskID).taskOrder = order;
+        });
+    };
+
     onAddNewTask = () => {
-        const newTaskText = prompt("Введите описание задачи: ", "Новая задача")
+        const newTaskText = prompt("Введите описание задачи:", "Новая задача");
 
         if (!newTaskText) return;
 
         const newTask = new Task({
             text: newTaskText,
-            onMoveTask: this.onMoveTask,
+            order: this.#tasks.length,
+            // onMoveTask: this.onMoveTask,
             onEditTask: this.onEditTask,
-            onDeleteTask: this.onDeleteTask
-        })
+            onDeleteTask: this.onDeleteTask,
+        });
+        this.#tasks.push(newTask);
 
-        // create DOM
-        const newTaskElement = newTask.render()
+        const newTaskElement = newTask.render();
+        document
+            .querySelector(`[id="${this.#tasklistID}"] .tasklist__tasks-list`)
+            .appendChild(newTaskElement);
+    };
 
-        this.#tasks.push(newTask)
+    render() {
+        const liElement = document.createElement("li");
+        liElement.classList.add("tasklists-list__item", "tasklist");
+        liElement.setAttribute("id", this.#tasklistID);
+        liElement.addEventListener("dragstart", () =>
+            localStorage.setItem("srcTasklistID", this.#tasklistID),
+        );
+        liElement.addEventListener("drop", this.onDropTaskInTasklist);
 
-        document.querySelector(`[id="${this.#tasklistID}"] .tasklist__tasks-list`)
-            .appendChild(newTaskElement)
+        const h2Element = document.createElement("h2");
+        h2Element.classList.add("tasklist__name");
+        h2Element.innerHTML = this.#tasklistName;
+        liElement.appendChild(h2Element);
 
+        const innerUlElement = document.createElement("ul");
+        innerUlElement.classList.add("tasklist__tasks-list");
+        liElement.appendChild(innerUlElement);
+
+        const button = document.createElement("button");
+        button.setAttribute("type", "button");
+        button.classList.add("tasklist__add-task-btn");
+        button.innerHTML = "&#10010; Добавить карточку";
+        button.addEventListener("click", this.onAddNewTask);
+        liElement.appendChild(button);
+
+        const adderElement = document.querySelector(".tasklist-adder");
+        adderElement.parentElement.insertBefore(liElement, adderElement);
     }
-    render () {
-        const liElement = document.createElement("li")
-        liElement.classList.add("tasklists-list__item", "tasklist")
-        liElement.id = this.#tasklistID
-
-        const h2Element = document.createElement("h2")
-        h2Element.classList.add("tasklist__name")
-        h2Element.innerHTML = this.#tasklistName
-        liElement.appendChild(h2Element)
-
-        const ulElement = document.createElement("ul")
-        ulElement.classList.add("tasklist__tasks-list")
-        liElement.appendChild(ulElement)
-
-        const buttonElement = document.createElement("button")
-        buttonElement.classList.add("tasklist__add-task-btn")
-        buttonElement.type = "button"
-        buttonElement.innerHTML = "&#10010; Добавить карточку";
-        liElement.appendChild(buttonElement)
-        buttonElement.onclick = this.onAddNewTask
-
-        const adderElement = document.querySelector(".tasklist-adder")
-        adderElement.parentElement.insertBefore(liElement, adderElement)
-    }
-    get tasklistID() { return this.#tasklistID;}
 }
