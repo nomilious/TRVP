@@ -38,11 +38,9 @@ export default class DB {
         });
 
         if (!allParamsSet) {
-            const errMsg = `${func}() error: wrong params (${Object.entries(
-                params,
-            )
+            const errMsg = `${func}() wrong params (${Object.entries(params)
                 .map(([key, value]) => `${key}: ${value}`)
-                .join(", ")})`;
+                .join(",")})`;
             throw { type: "client", error: new Error(errMsg) };
         }
 
@@ -59,29 +57,29 @@ export default class DB {
     }
     async disconnect() {
         await this.#dbClient.end();
-        console.log("DB Disc onnected");
+        console.log("DB Disconnected");
     }
     async getTaskLists() {
         try {
             const tasklists = await this.#dbClient.query(
-                "SELECT * FROM TASKLISTS ORDER BY POSITION;",
+                "SELECT * FROM TASKLISTS ORDER BY POSITION;"
             );
 
             return tasklists.rows;
         } catch (error) {
-            console.error("Unable to get tasklists", error);
+            console.error("Unable to get tasklists,", error);
             return Promise.reject(error);
         }
     }
     async getTasks() {
         try {
             const tasks = await this.#dbClient.query(
-                "SELECT * FROM TASKS ORDER BY tasklist_id, POSITION;",
+                "SELECT * FROM TASKS ORDER BY tasklist_id, POSITION;"
             );
 
             return tasks.rows;
         } catch (error) {
-            console.error("Unable to get tasks", error);
+            console.error("Unable to get tasks,", error);
             return Promise.reject({ type: "internal", error });
         }
     }
@@ -93,10 +91,10 @@ export default class DB {
         try {
             await this.#dbClient.query(
                 "INSERT INTO TASKLISTS (ID, NAME, POSITION) VALUES ($1, $2, $3);",
-                [id, name, position],
+                [id, name, position]
             );
         } catch (error) {
-            console.error("Unable to add tasklists", error);
+            console.error("Unable to add tasklists,", error);
             return Promise.reject(error);
         }
     }
@@ -111,14 +109,14 @@ export default class DB {
         try {
             await this.#dbClient.query(
                 "INSERT INTO TASKS (ID, TEXT, POSITION, tasklist_id) VALUES ($1, $2, $3, $4);",
-                [id, name, position, tasklistId],
+                [id, name, position, tasklistId]
             );
             await this.#dbClient.query(
                 "UPDATE TASKLISTS SET TASKS = ARRAY_APPEND(TASKS, $1) WHERE ID =$2;",
-                [id, tasklistId],
+                [id, tasklistId]
             );
         } catch (error) {
-            console.error("Unable to add task, error: ", error);
+            console.error("Unable to add task,", error);
             return Promise.reject(error);
         }
     }
@@ -143,44 +141,51 @@ export default class DB {
         try {
             await this.#dbClient.query(query, params);
         } catch (error) {
-            console.error("Unable to updateTaskk, error: ", error);
+            console.error("Unable to updateTaskk,", error);
             return Promise.reject(error);
         }
     }
-    async deleteTask({ id = null, taskId = null }) {
-        const _params = { id, taskId };
+    async deleteTask({ id = null }) {
+        const _params = { id };
         this.areParamsSet(_params, "deleteTask");
 
         try {
-            await this.#dbClient.query(
-                "UPDATE TASKLISTS SET TASKS = ARRAY_REMOVE(TASKS, $1) WHERE ID =$2;",
-                [id, taskId],
+            const dbTasklistId = await this.#dbClient.query(
+                "SELECT tasklist_id FROM tasks WHERE id = $1;",
+                [id]
             );
-            await this.#dbClient.query("DELETE TASKS WHERE ID = $1;", [id]);
+            const tasklistId = dbTasklistId.rows[0].tasklist_id;
+            await this.#dbClient.query(
+                "UPDATE TASKLISTS SET TASKS = ARRAY_REMOVE(TASKS, $1) WHERE ID = $2;",
+                [id, tasklistId]
+            );
+            await this.#dbClient.query("DELETE FROM TASKS WHERE ID = $1;", [
+                id,
+            ]);
         } catch (error) {
-            console.error("Unable to deleteTask, error: ", error);
+            console.error("Unable to deleteTask,", error);
             return Promise.reject(error);
         }
     }
-    async moveTask({ id = null, srcTadkId = null, destTaskId = null }) {
-        const _params = { id, srcTadkId, destTaskId };
+    async moveTask({ id = null, srcTasklistId = null, destTasklistId = null }) {
+        const _params = { id, srcTasklistId, destTasklistId };
         this.areParamsSet(_params, "moveTask");
 
         try {
             await this.#dbClient.query(
                 "UPDATE TASKS SET tasklist_id = $2 WHERE ID = $2;",
-                [destTaskId, id],
+                [destTasklistId, id]
             );
             await this.#dbClient.query(
                 "UPDATE TASKLISTS SET TASKS = ARRAY_APPEND(TASKS, $2) WHERE ID = $1;",
-                [destTaskId, id],
+                [destTasklistId, id]
             );
             await this.#dbClient.query(
                 "UPDATE TASKLISTS SET TASKS = ARRAY_REMOVE(TASKS, $2) WHERE ID = $1;",
-                [srcTadkId, id],
+                [srcTasklistId, id]
             );
         } catch (error) {
-            console.error("Unable to moveTask, error: ", error);
+            console.error("Unable to moveTask,", error);
             return Promise.reject(error);
         }
     }

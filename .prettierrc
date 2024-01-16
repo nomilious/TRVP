@@ -2,7 +2,7 @@
   "tabWidth": 4,
   "useTabs": false,
   "semi": true,
-  "trailingComma": "all",
-  "arrowParens": "avoid", 
+  "trailingComma": "es5",
+  "arrowParens": "avoid",
   "singleAttributePerLine": true
 }
