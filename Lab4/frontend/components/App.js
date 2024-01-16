@@ -1,4 +1,5 @@
 import Tasklist from "./Tasklist";
+import AppModel from "../model/AppModel";
 
 export default class App {
     #tasklists = [];
@@ -14,20 +15,34 @@ export default class App {
         }
     };
 
-    onInputKeydown = event => {
+    onInputKeydown = async event => {
         if (event.key !== "Enter") return;
 
         if (event.target.value) {
-            const newTasklist = new Tasklist({
-                name: event.target.value,
-                // onMoveTask: this.onMoveTask,
-                onDropTaskInTasklist: this.onDropTaskInTasklist,
-                onEditTask: this.onEditTask,
-                onDeleteTask: this.onDeleteTask,
-            });
+            const tasklistId = crypto.randomUUID();
+            try {
+                const res = await AppModel.addTasklists({
+                    id: tasklistId,
+                    name: event.target.value,
+                    position: this.#tasklists.length,
+                });
+                console.log("add to model");
+                const newTasklist = new Tasklist({
+                    id: tasklistId,
+                    name: event.target.value,
+                    position: this.#tasklists.length,
+                    onDropTaskInTasklist: this.onDropTaskInTasklist,
+                    onEditTask: this.onEditTask,
+                    onDeleteTask: this.onDeleteTask,
+                });
+                console.log("created local");
 
-            this.#tasklists.push(newTasklist);
-            newTasklist.render();
+                this.#tasklists.push(newTasklist);
+                newTasklist.render();
+                console.log(res);
+            } catch (error) {
+                console.error(error);
+            }
         }
 
         event.target.style.display = "none";
@@ -37,7 +52,7 @@ export default class App {
             "inherit";
     };
 
-    onDropTaskInTasklist = evt => {
+    onDropTaskInTasklist = async evt => {
         evt.stopPropagation();
 
         const destTasklistElement = evt.currentTarget;
@@ -53,65 +68,34 @@ export default class App {
         if (!destTasklistElement.querySelector(`[id="${movedTaskID}"]`)) return;
 
         const srcTasklist = this.#tasklists.find(
-            tasklist => tasklist.tasklistID === srcTasklistID,
+            tasklist => tasklist.tasklistID === srcTasklistID
         );
         const destTasklist = this.#tasklists.find(
-            tasklist => tasklist.tasklistID === destTasklistID,
+            tasklist => tasklist.tasklistID === destTasklistID
         );
 
-        if (srcTasklistID !== destTasklistID) {
-            const movedTask = srcTasklist.deleteTask({ taskID: movedTaskID });
-            destTasklist.addTask({ task: movedTask });
+        try {
+            if (srcTasklistID !== destTasklistID) {
+                const res = await AppModel.moveTasks({
+                    id: movedTaskID,
+                    srcTasklistId: srcTasklistID,
+                    destTasklistId: destTasklistID,
+                });
+                const movedTask = srcTasklist.deleteTask({
+                    taskID: movedTaskID,
+                });
+                destTasklist.addTask({ task: movedTask });
 
-            srcTasklist.reorderTasks();
+                srcTasklist.reorderTasks();
+            }
+
+            destTasklist.reorderTasks();
+        } catch (error) {
+            console.error(error);
         }
-
-        const destTasksIDs = Array.from(
-            destTasklistElement.querySelector(".tasklist__tasks-list").children,
-            elem => elem.getAttribute("id"),
-        );
-
-        destTasksIDs.forEach((taskID, order) => {
-            destTasklist.getTaskById({ taskID }).taskOrder = order;
-        });
     };
 
-    // moveTask = ({ taskID, direction }) => {
-    //   let srcTasklistIndex = -1;
-
-    //   this.#tasklists.forEach((tasklist, i) => {
-    //     let task = tasklist.getTaskById({ taskID });
-    //     if (task) {
-    //       srcTasklistIndex = i;
-    //     }
-    //   });
-
-    //   const destTasklistIndex = direction === 'left'
-    //     ? srcTasklistIndex - 1
-    //     : srcTasklistIndex + 1;
-
-    //   const movedTask = this.#tasklists[srcTasklistIndex].deleteTask({ taskID });
-    //   this.#tasklists[destTasklistIndex].addTask({ task: movedTask });
-    // };
-
-    // onMoveTask = ({ taskID, direction }) => {
-    //   if (!direction || (direction !== 'left' && direction !== 'right')) return;
-
-    //   const taskElement = document.getElementById(taskID);
-    //   const srcTasklistElement = taskElement.closest('.tasklist');
-    //   const destTasklistElement = direction === 'left'
-    //     ? srcTasklistElement.previousElementSibling
-    //     : srcTasklistElement.nextElementSibling;
-
-    //   if (!destTasklistElement) return;
-
-    //   destTasklistElement.querySelector('ul.tasklist__tasks-list')
-    //     .appendChild(taskElement);
-
-    //   this.moveTask({ taskID, direction });
-    // };
-
-    onEditTask = ({ taskID }) => {
+    onEditTask = async ({ taskID }) => {
         let fTask = null;
         for (let tasklist of this.#tasklists) {
             fTask = tasklist.getTaskById({ taskID });
@@ -119,18 +103,27 @@ export default class App {
         }
 
         const curTaskText = fTask.taskText;
-
         const newTaskText = prompt("Введите новое описание задачи");
 
         if (!newTaskText || newTaskText === curTaskText) return;
+        try {
+            const res = await AppModel.editTasks({
+                id: taskID,
+                text: newTaskText,
+            });
 
-        fTask.taskText = newTaskText;
+            fTask.taskText = newTaskText;
 
-        document.querySelector(`[id="${taskID}"] span.task__text`).innerHTML =
-            newTaskText;
+            document.querySelector(
+                `[id="${taskID}"] span.task__text`
+            ).innerHTML = newTaskText;
+            console.log(res);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
-    onDeleteTask = ({ taskID }) => {
+    onDeleteTask = async ({ taskID }) => {
         let fTask = null;
         let fTasklist = null;
         for (let tasklist of this.#tasklists) {
@@ -139,18 +132,22 @@ export default class App {
             if (fTask) break;
         }
 
-        const taskShouldBeDeleted = confirm(
-            `Задача '${fTask.taskText}' будет удалена. Прододлжить?`,
-        );
+        // const taskShouldBeDeleted = confirm(
+        //     `Задача '${fTask.taskText}' будет удалена. Прододлжить?`
+        // );
 
-        if (!taskShouldBeDeleted) return;
-
-        fTasklist.deleteTask({ taskID });
-
-        document.getElementById(taskID).remove();
+        // if (!taskShouldBeDeleted) return;
+        try {
+            const res = await AppModel.deleteTasks({ id: taskID });
+            fTasklist.deleteTask({ taskID });
+            document.getElementById(taskID).remove();
+            console.log(res);
+        } catch (error) {
+            console.log(error);
+        }
     };
 
-    init() {
+    async init() {
         document
             .querySelector(".tasklist-adder__btn")
             .addEventListener("click", event => {
@@ -179,7 +176,7 @@ export default class App {
             evt.preventDefault();
 
             const draggedElement = document.querySelector(
-                ".task.task_selected",
+                ".task.task_selected"
             );
             const draggedElementPrevList = draggedElement.closest(".tasklist");
 
@@ -240,5 +237,30 @@ export default class App {
                     .appendChild(draggedElement);
             }
         });
+        try {
+            const tasklists = await AppModel.getTasklists();
+            for (const tasklist of tasklists) {
+                const tasklistObject = new Tasklist({
+                    id: tasklist.id,
+                    name: tasklist.name,
+                    position: tasklist.position,
+                    onDropTaskInTasklist: this.onDropTaskInTasklist,
+                    onEditTask: this.onEditTask,
+                    onDeleteTask: this.onDeleteTask,
+                });
+                this.#tasklists.push(tasklistObject);
+                tasklistObject.render();
+
+                for (const task of tasklist.tasks) {
+                    tasklistObject.onAddNewTaskLocal({
+                        id: task.id,
+                        text: task.text,
+                        position: task.position,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

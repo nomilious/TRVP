@@ -1,18 +1,19 @@
 export default class Task {
-    #taskID = "";
+    #taskID = null;
     #taskText = "";
-    #taskOrder = -1;
+    #taskPosition = -1;
 
     constructor({
+        id = null,
         text,
-        order,
+        position,
         // onMoveTask,
         onEditTask,
         onDeleteTask,
     }) {
-        this.#taskID = crypto.randomUUID();
+        this.#taskID = id || crypto.randomUUID();
         this.#taskText = text;
-        this.#taskOrder = order;
+        this.#taskPosition = position;
         // this.onMoveTask = onMoveTask;
         this.onEditTask = onEditTask;
         this.onDeleteTask = onDeleteTask;
@@ -31,12 +32,12 @@ export default class Task {
         }
     }
 
-    get taskOrder() {
-        return this.#taskOrder;
+    get taskPosition() {
+        return this.#taskPosition;
     }
-    set taskOrder(value) {
+    set taskPosition(value) {
         if (typeof value === "number" && value >= 0) {
-            this.#taskOrder = value;
+            this.#taskPosition = value;
         }
     }
 
@@ -50,7 +51,7 @@ export default class Task {
             localStorage.setItem("movedTaskID", this.#taskID);
         });
         liElement.addEventListener("dragend", evt =>
-            evt.target.classList.remove("task_selected"),
+            evt.target.classList.remove("task_selected")
         );
 
         const span = document.createElement("span");
@@ -85,7 +86,7 @@ export default class Task {
         editBtn.setAttribute("type", "button");
         editBtn.classList.add("task__contol-btn", "edit-icon");
         editBtn.addEventListener("click", () =>
-            this.onEditTask({ taskID: this.#taskID }),
+            this.onEditTask({ taskID: this.#taskID })
         );
         lowerRowDiv.appendChild(editBtn);
 
@@ -93,7 +94,7 @@ export default class Task {
         deleteBtn.setAttribute("type", "button");
         deleteBtn.classList.add("task__contol-btn", "delete-icon");
         deleteBtn.addEventListener("click", () =>
-            this.onDeleteTask({ taskID: this.#taskID }),
+            this.onDeleteTask({ taskID: this.#taskID })
         );
         lowerRowDiv.appendChild(deleteBtn);
 

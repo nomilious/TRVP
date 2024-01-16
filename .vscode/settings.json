@@ -1,17 +1,17 @@
 {
     "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        ".idea": true,
-        "Lab1": true,
-        "Lab2": true,
-        "Lab3": true,
-        ".vscode": true,
-        "task-manager.fig": true,
-        ".prettierrc": true
+        "**/.git": false,
+        "**/.svn": false,
+        "**/.hg": false,
+        "**/CVS": false,
+        "**/.DS_Store": false,
+        ".idea": false,
+        "Lab1": false,
+        "Lab2": false,
+        "Lab3": false,
+        ".vscode": false,
+        "task-manager.fig": false,
+        ".prettierrc": false
     },
     "editor.indentSize": 4
 

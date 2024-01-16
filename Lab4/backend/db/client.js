@@ -31,7 +31,7 @@ export default class DB {
             if (typeof value === "number" && value === -1) {
                 return false;
             }
-            if (typeof value === "string" && value === "") {
+            if (typeof value === "string" && !value) {
                 return false;
             }
             return true;
@@ -41,7 +41,7 @@ export default class DB {
             const errMsg = `${func}() wrong params (${Object.entries(params)
                 .map(([key, value]) => `${key}: ${value}`)
                 .join(",")})`;
-            throw { type: "client", error: new Error(errMsg) };
+            throw { type: "client", statusCode: 176, error: new Error(errMsg) };
         }
 
         return true;
@@ -98,8 +98,8 @@ export default class DB {
             return Promise.reject(error);
         }
     }
-    async addTask({ id = null, name = "", position = -1, tasklistId = null }) {
-        const _params = { id, name, position, tasklistId };
+    async addTask({ id = null, text = "", position = -1, tasklistId = null }) {
+        const _params = { id, text, position, tasklistId };
         try {
             this.areParamsSet(_params, "addTask");
         } catch (err) {
@@ -109,7 +109,7 @@ export default class DB {
         try {
             await this.#dbClient.query(
                 "INSERT INTO TASKS (ID, TEXT, POSITION, tasklist_id) VALUES ($1, $2, $3, $4);",
-                [id, name, position, tasklistId]
+                [id, text, position, tasklistId]
             );
             await this.#dbClient.query(
                 "UPDATE TASKLISTS SET TASKS = ARRAY_APPEND(TASKS, $1) WHERE ID =$2;",
@@ -121,9 +121,8 @@ export default class DB {
         }
     }
 
-    async updateTask({ id = null, text = "", position = -1 }) {
+    async updateTask({ id = null, text = "", position = -2 }) {
         const _params = { id, text, position };
-        this.areParamsSet(_params, "updateTask");
 
         let query = "";
         let params = [];
@@ -169,11 +168,16 @@ export default class DB {
     }
     async moveTask({ id = null, srcTasklistId = null, destTasklistId = null }) {
         const _params = { id, srcTasklistId, destTasklistId };
-        this.areParamsSet(_params, "moveTask");
+
+        try {
+            this.areParamsSet(_params, "moveTask");
+        } catch (error) {
+            console.error(error);
+        }
 
         try {
             await this.#dbClient.query(
-                "UPDATE TASKS SET tasklist_id = $2 WHERE ID = $2;",
+                "UPDATE TASKS SET tasklist_id = $1 WHERE ID = $2;",
                 [destTasklistId, id]
             );
             await this.#dbClient.query(

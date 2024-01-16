@@ -1,20 +1,23 @@
 import Task from "./Task";
+import AppModel from "../model/AppModel";
 
 export default class Tasklist {
     #tasks = [];
     #tasklistName = "";
-    #tasklistID = "";
+    #tasklistID = null;
+    #tasklistPosition = -1;
 
     constructor({
+        id = null,
         name,
-        // onMoveTask,
+        position,
         onDropTaskInTasklist,
         onEditTask,
         onDeleteTask,
     }) {
+        this.#tasklistID = id || crypto.randomUUID();
         this.#tasklistName = name;
-        this.#tasklistID = crypto.randomUUID();
-        // this.onMoveTask = onMoveTask;
+        this.position = position;
         this.onDropTaskInTasklist = onDropTaskInTasklist;
         this.onEditTask = onEditTask;
         this.onDeleteTask = onDeleteTask;
@@ -31,7 +34,7 @@ export default class Tasklist {
 
     deleteTask = ({ taskID }) => {
         const deleteTaskIndex = this.#tasks.findIndex(
-            task => task.taskID === taskID,
+            task => task.taskID === taskID
         );
 
         if (deleteTaskIndex === -1) return;
@@ -41,28 +44,61 @@ export default class Tasklist {
         return deletedTask;
     };
 
-    reorderTasks = () => {
+    reorderTasks = async () => {
         const orderedTasksIDs = Array.from(
             document.querySelector(
-                `[id="${this.#tasklistID}"] .tasklist__tasks-list`,
+                `[id="${this.#tasklistID}"] .tasklist__tasks-list`
             ).children,
-            elem => elem.getAttribute("id"),
+            elem => elem.getAttribute("id")
         );
+        let reorderTaskInfo = [];
 
-        orderedTasksIDs.forEach((taskID, order) => {
-            this.#tasks.find(task => task.taskID === taskID).taskOrder = order;
+        orderedTasksIDs.forEach((taskID, position) => {
+            const task = this.#tasks.find(task => task.taskID === taskID);
+            if (task.taskPosition !== position) {
+                reorderTaskInfo.push({ id: taskID, position });
+                task.taskPosition = position;
+            }
         });
+        if (reorderTaskInfo.length >= 1) {
+            try {
+                await AppModel.editMultipleTasks({
+                    reorderedTasks: reorderTaskInfo,
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
     };
 
-    onAddNewTask = () => {
+    onAddNewTask = async () => {
         const newTaskText = prompt("Введите описание задачи:", "Новая задача");
 
         if (!newTaskText) return;
 
+        try {
+            const id = crypto.randomUUID();
+            const res = await AppModel.addTasks({
+                id: id,
+                text: newTaskText,
+                position: this.#tasks.length,
+                tasklistId: this.#tasklistID,
+            });
+            this.onAddNewTaskLocal({
+                id,
+                text: newTaskText,
+                position: this.#tasks.length,
+            });
+            console.log(res);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    onAddNewTaskLocal = ({ id = null, text = "", position = -1 }) => {
         const newTask = new Task({
-            text: newTaskText,
-            order: this.#tasks.length,
-            // onMoveTask: this.onMoveTask,
+            id,
+            text,
+            position,
             onEditTask: this.onEditTask,
             onDeleteTask: this.onDeleteTask,
         });
@@ -79,7 +115,7 @@ export default class Tasklist {
         liElement.classList.add("tasklists-list__item", "tasklist");
         liElement.setAttribute("id", this.#tasklistID);
         liElement.addEventListener("dragstart", () =>
-            localStorage.setItem("srcTasklistID", this.#tasklistID),
+            localStorage.setItem("srcTasklistID", this.#tasklistID)
         );
         liElement.addEventListener("drop", this.onDropTaskInTasklist);
 
